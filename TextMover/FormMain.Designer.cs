@@ -38,21 +38,23 @@
             this.btnMoveTxt.Location = new System.Drawing.Point(27, 210);
             this.btnMoveTxt.Name = "btnMoveTxt";
             this.btnMoveTxt.Size = new System.Drawing.Size(113, 23);
-            this.btnMoveTxt.TabIndex = 0;
+            this.btnMoveTxt.TabIndex = 1;
             this.btnMoveTxt.Text = "문자 옮기기";
             this.btnMoveTxt.UseVisualStyleBackColor = true;
             // 
             // txtBoxSend
             // 
             this.txtBoxSend.Location = new System.Drawing.Point(27, 13);
+            this.txtBoxSend.MaxLength = 5;
             this.txtBoxSend.Name = "txtBoxSend";
             this.txtBoxSend.Size = new System.Drawing.Size(100, 21);
-            this.txtBoxSend.TabIndex = 1;
+            this.txtBoxSend.TabIndex = 0;
             // 
             // txtBoxRecv
             // 
             this.txtBoxRecv.Enabled = false;
             this.txtBoxRecv.Location = new System.Drawing.Point(160, 12);
+            this.txtBoxRecv.MaxLength = 5;
             this.txtBoxRecv.Name = "txtBoxRecv";
             this.txtBoxRecv.Size = new System.Drawing.Size(100, 21);
             this.txtBoxRecv.TabIndex = 2;
@@ -65,6 +67,7 @@
             this.Controls.Add(this.txtBoxRecv);
             this.Controls.Add(this.txtBoxSend);
             this.Controls.Add(this.btnMoveTxt);
+            this.FormBorderStyle = System.Windows.Forms.FormBorderStyle.FixedSingle;
             this.Name = "FormMain";
             this.Text = "Text Mover";
             this.ResumeLayout(false);

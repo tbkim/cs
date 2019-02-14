@@ -1,10 +1,4 @@
 ﻿using System;
-using System.Collections.Generic;
-using System.ComponentModel;
-using System.Data;
-using System.Drawing;
-using System.Linq;
-using System.Text;
 using System.Windows.Forms;
 
 namespace TextMover
@@ -19,11 +13,15 @@ namespace TextMover
 
         private void init()
         {
+            registEvent();
+
+            FormBorderStyle = FormBorderStyle.FixedSingle;
             MaximizeBox = false;
             txtBoxRecv.Enabled = false;
             txtBoxRecv.MaxLength = 5;
             txtBoxSend.MaxLength = 5;
-            registEvent();
+            txtBoxSend.TabIndex = 0;
+            btnMoveTxt.TabIndex = 1;
         }
 
         private void registEvent()
@@ -33,13 +31,13 @@ namespace TextMover
 
         private void btnMoveTxt_Click(object sender, EventArgs e)
         {
-            sendTxt(txtBoxSend, txtBoxRecv);
+            sendTxt();
         }
 
-        private void sendTxt(TextBox txtboxSend, TextBox txtboxRecv)
+        private void sendTxt()
         {
-            txtboxRecv.Text = txtboxSend.Text;
-            txtboxSend.Text = null;
+            txtBoxRecv.Text = txtBoxSend.Text;
+            txtBoxSend.Text = string.Empty;
         }
     }
 }
