@@ -28,17 +28,22 @@
         /// </summary>
         private void InitializeComponent()
         {
+            this.components = new System.ComponentModel.Container();
             this.btnMoveTxt = new System.Windows.Forms.Button();
             this.txtBoxSend = new System.Windows.Forms.TextBox();
             this.txtBoxRecv = new System.Windows.Forms.TextBox();
+            this.timerDelay = new System.Windows.Forms.Timer(this.components);
+            this.label1 = new System.Windows.Forms.Label();
+            this.numericUpDownTimeDelay = new System.Windows.Forms.NumericUpDown();
+            ((System.ComponentModel.ISupportInitialize)(this.numericUpDownTimeDelay)).BeginInit();
             this.SuspendLayout();
             // 
             // btnMoveTxt
             // 
-            this.btnMoveTxt.Location = new System.Drawing.Point(27, 210);
+            this.btnMoveTxt.Location = new System.Drawing.Point(147, 96);
             this.btnMoveTxt.Name = "btnMoveTxt";
             this.btnMoveTxt.Size = new System.Drawing.Size(113, 23);
-            this.btnMoveTxt.TabIndex = 1;
+            this.btnMoveTxt.TabIndex = 2;
             this.btnMoveTxt.Text = "문자 옮기기";
             this.btnMoveTxt.UseVisualStyleBackColor = true;
             // 
@@ -59,17 +64,41 @@
             this.txtBoxRecv.Size = new System.Drawing.Size(100, 21);
             this.txtBoxRecv.TabIndex = 2;
             // 
+            // label1
+            // 
+            this.label1.AutoSize = true;
+            this.label1.Location = new System.Drawing.Point(69, 55);
+            this.label1.Name = "label1";
+            this.label1.Size = new System.Drawing.Size(85, 12);
+            this.label1.TabIndex = 4;
+            this.label1.Text = "실행 지연 시간";
+            // 
+            // numericUpDownTimeDelay
+            // 
+            this.numericUpDownTimeDelay.Location = new System.Drawing.Point(160, 53);
+            this.numericUpDownTimeDelay.Maximum = new decimal(new int[] {
+            60,
+            0,
+            0,
+            0});
+            this.numericUpDownTimeDelay.Name = "numericUpDownTimeDelay";
+            this.numericUpDownTimeDelay.Size = new System.Drawing.Size(100, 21);
+            this.numericUpDownTimeDelay.TabIndex = 1;
+            // 
             // FormMain
             // 
             this.AutoScaleDimensions = new System.Drawing.SizeF(7F, 12F);
             this.AutoScaleMode = System.Windows.Forms.AutoScaleMode.Font;
-            this.ClientSize = new System.Drawing.Size(284, 262);
+            this.ClientSize = new System.Drawing.Size(284, 152);
+            this.Controls.Add(this.numericUpDownTimeDelay);
+            this.Controls.Add(this.label1);
             this.Controls.Add(this.txtBoxRecv);
             this.Controls.Add(this.txtBoxSend);
             this.Controls.Add(this.btnMoveTxt);
             this.FormBorderStyle = System.Windows.Forms.FormBorderStyle.FixedSingle;
             this.Name = "FormMain";
             this.Text = "Text Mover";
+            ((System.ComponentModel.ISupportInitialize)(this.numericUpDownTimeDelay)).EndInit();
             this.ResumeLayout(false);
             this.PerformLayout();
 
@@ -80,6 +109,9 @@
         private System.Windows.Forms.Button btnMoveTxt;
         private System.Windows.Forms.TextBox txtBoxSend;
         private System.Windows.Forms.TextBox txtBoxRecv;
+        private System.Windows.Forms.Timer timerDelay;
+        private System.Windows.Forms.Label label1;
+        private System.Windows.Forms.NumericUpDown numericUpDownTimeDelay;
     }
 }
 
