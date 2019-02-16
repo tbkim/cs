@@ -5,6 +5,8 @@ namespace TextMover
 {
     public partial class FormMain : Form
     {
+        Log log = new Log();
+
         public FormMain()
         {
             InitializeComponent();
@@ -15,15 +17,12 @@ namespace TextMover
         {
             registEvent();
 
-            FormBorderStyle = FormBorderStyle.FixedSingle;
-            MaximizeBox = false;
-            txtBoxRecv.Enabled = false;
-            txtBoxRecv.MaxLength = 5;
-            txtBoxSend.MaxLength = 5;
-            txtBoxSend.TabIndex = 0;
-            btnMoveTxt.TabIndex = 1;
-            numericUpDownTimeDelay.Minimum = 0;
-            numericUpDownTimeDelay.Maximum = 60;
+            listViewLog.View = View.Details;
+            listViewLog.Columns.Add("보낸문자", 60, HorizontalAlignment.Left);
+            listViewLog.Columns.Add("지연시간", 60, HorizontalAlignment.Left);
+            listViewLog.Columns.Add("실행시간", 120, HorizontalAlignment.Left);
+            listViewLog.Columns.Add("완료시간", 120, HorizontalAlignment.Left);
+            listViewLog.Columns.Add("에러여부", 60, HorizontalAlignment.Left);
         }
 
         private void registEvent()
@@ -34,40 +33,72 @@ namespace TextMover
 
         private void btnMoveTxt_Click(object sender, EventArgs e)
         {
-            enabledControl(false);
+            log.timeExcute = DateTime.Now.ToString("yyyy-MM-dd HH:mm:ss");
 
+            enabledControl(false);
+            
             int delay = (int)numericUpDownTimeDelay.Value * 1000;
-            if (delay == 0)
-            {
-                sendTxt();
-                return;
-            }
+            if (delay == 0) delay = 1;
+
+            log.delay = (numericUpDownTimeDelay.Value).ToString();
 
             timerDelay.Interval = delay;
             timerDelay.Start();
         }
 
-        private void enabledControl(bool state)
+        private void enabledControl(bool enabled)
         {
-            txtBoxSend.Enabled = state;
-            btnMoveTxt.Enabled = state;
-            numericUpDownTimeDelay.Enabled = state;
+            txtBoxSend.Enabled = enabled;
+            btnMoveTxt.Enabled = enabled;
+            numericUpDownTimeDelay.Enabled = enabled;
         }
 
         private void sendTxt()
-        {    
+        {
             txtBoxRecv.Text = txtBoxSend.Text;
+            log.txtSend = txtBoxSend.Text;
             txtBoxSend.Text = string.Empty;
+        }
 
-            enabledControl(true);
+        private void addLog()
+        {
+            listViewLog.BeginUpdate();
+
+            ListViewItem lvi = new ListViewItem(log.txtSend);
+            lvi.SubItems.Add(log.delay);
+            lvi.SubItems.Add(log.timeExcute);
+            lvi.SubItems.Add(DateTime.Now.ToString("yyyy-MM-dd HH:mm:ss"));
+            lvi.SubItems.Add(log.err);
+            listViewLog.Items.Add(lvi);
+
+            listViewLog.EndUpdate();
         }
 
         private void timer_tick(object sender, EventArgs e)
         {
-            sendTxt();
-            timerDelay.Stop();
+            try
+            {
+                sendTxt();
+            }
+            catch (Exception ex)
+            {
+                log.err = "에러";
+                MessageBox.Show(ex.Message, "에러");
+            }
+            finally
+            {
+                addLog();
+                timerDelay.Stop();
+                enabledControl(true);
+            }
         }
+    }
 
-
+    public struct Log
+    {
+        public string txtSend;
+        public string delay;
+        public string timeExcute;
+        public string err;
     }
 }
