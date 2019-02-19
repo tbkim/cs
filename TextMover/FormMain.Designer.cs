@@ -35,7 +35,7 @@
             this.timerDelay = new System.Windows.Forms.Timer(this.components);
             this.label1 = new System.Windows.Forms.Label();
             this.numericUpDownTimeDelay = new System.Windows.Forms.NumericUpDown();
-            this.listViewLog = new System.Windows.Forms.ListView();
+            this.listViewInfo = new System.Windows.Forms.ListView();
             ((System.ComponentModel.ISupportInitialize)(this.numericUpDownTimeDelay)).BeginInit();
             this.SuspendLayout();
             // 
@@ -86,20 +86,20 @@
             this.numericUpDownTimeDelay.Size = new System.Drawing.Size(100, 21);
             this.numericUpDownTimeDelay.TabIndex = 1;
             // 
-            // listViewLog
+            // listViewInfo
             // 
-            this.listViewLog.Location = new System.Drawing.Point(27, 146);
-            this.listViewLog.Name = "listViewLog";
-            this.listViewLog.Size = new System.Drawing.Size(463, 97);
-            this.listViewLog.TabIndex = 5;
-            this.listViewLog.UseCompatibleStateImageBehavior = false;
+            this.listViewInfo.Location = new System.Drawing.Point(27, 146);
+            this.listViewInfo.Name = "listViewInfo";
+            this.listViewInfo.Size = new System.Drawing.Size(463, 97);
+            this.listViewInfo.TabIndex = 5;
+            this.listViewInfo.UseCompatibleStateImageBehavior = false;
             // 
             // FormMain
             // 
             this.AutoScaleDimensions = new System.Drawing.SizeF(7F, 12F);
             this.AutoScaleMode = System.Windows.Forms.AutoScaleMode.Font;
             this.ClientSize = new System.Drawing.Size(516, 275);
-            this.Controls.Add(this.listViewLog);
+            this.Controls.Add(this.listViewInfo);
             this.Controls.Add(this.numericUpDownTimeDelay);
             this.Controls.Add(this.label1);
             this.Controls.Add(this.txtBoxRecv);
@@ -123,7 +123,7 @@
         private System.Windows.Forms.Timer timerDelay;
         private System.Windows.Forms.Label label1;
         private System.Windows.Forms.NumericUpDown numericUpDownTimeDelay;
-        private System.Windows.Forms.ListView listViewLog;
+        private System.Windows.Forms.ListView listViewInfo;
     }
 }
 
