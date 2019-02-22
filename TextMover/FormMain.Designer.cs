@@ -36,12 +36,13 @@
             this.label1 = new System.Windows.Forms.Label();
             this.numericUpDownTimeDelay = new System.Windows.Forms.NumericUpDown();
             this.listViewInfo = new System.Windows.Forms.ListView();
+            this.btnClearView = new System.Windows.Forms.Button();
             ((System.ComponentModel.ISupportInitialize)(this.numericUpDownTimeDelay)).BeginInit();
             this.SuspendLayout();
             // 
             // btnMoveTxt
             // 
-            this.btnMoveTxt.Location = new System.Drawing.Point(257, 100);
+            this.btnMoveTxt.Location = new System.Drawing.Point(27, 105);
             this.btnMoveTxt.Name = "btnMoveTxt";
             this.btnMoveTxt.Size = new System.Drawing.Size(233, 23);
             this.btnMoveTxt.TabIndex = 2;
@@ -50,7 +51,7 @@
             // 
             // txtBoxSend
             // 
-            this.txtBoxSend.Location = new System.Drawing.Point(257, 17);
+            this.txtBoxSend.Location = new System.Drawing.Point(27, 22);
             this.txtBoxSend.MaxLength = 5;
             this.txtBoxSend.Name = "txtBoxSend";
             this.txtBoxSend.Size = new System.Drawing.Size(100, 21);
@@ -59,7 +60,7 @@
             // txtBoxRecv
             // 
             this.txtBoxRecv.Enabled = false;
-            this.txtBoxRecv.Location = new System.Drawing.Point(390, 16);
+            this.txtBoxRecv.Location = new System.Drawing.Point(160, 21);
             this.txtBoxRecv.MaxLength = 5;
             this.txtBoxRecv.Name = "txtBoxRecv";
             this.txtBoxRecv.Size = new System.Drawing.Size(100, 21);
@@ -68,7 +69,7 @@
             // label1
             // 
             this.label1.AutoSize = true;
-            this.label1.Location = new System.Drawing.Point(299, 59);
+            this.label1.Location = new System.Drawing.Point(69, 64);
             this.label1.Name = "label1";
             this.label1.Size = new System.Drawing.Size(85, 12);
             this.label1.TabIndex = 4;
@@ -76,7 +77,7 @@
             // 
             // numericUpDownTimeDelay
             // 
-            this.numericUpDownTimeDelay.Location = new System.Drawing.Point(390, 57);
+            this.numericUpDownTimeDelay.Location = new System.Drawing.Point(160, 62);
             this.numericUpDownTimeDelay.Maximum = new decimal(new int[] {
             60,
             0,
@@ -88,17 +89,28 @@
             // 
             // listViewInfo
             // 
+            this.listViewInfo.FullRowSelect = true;
             this.listViewInfo.Location = new System.Drawing.Point(27, 146);
             this.listViewInfo.Name = "listViewInfo";
-            this.listViewInfo.Size = new System.Drawing.Size(463, 97);
-            this.listViewInfo.TabIndex = 5;
+            this.listViewInfo.Size = new System.Drawing.Size(407, 163);
+            this.listViewInfo.TabIndex = 3;
             this.listViewInfo.UseCompatibleStateImageBehavior = false;
+            // 
+            // btnClearView
+            // 
+            this.btnClearView.Location = new System.Drawing.Point(314, 105);
+            this.btnClearView.Name = "btnClearView";
+            this.btnClearView.Size = new System.Drawing.Size(120, 23);
+            this.btnClearView.TabIndex = 4;
+            this.btnClearView.Text = "리스트 지우기";
+            this.btnClearView.UseVisualStyleBackColor = true;
             // 
             // FormMain
             // 
             this.AutoScaleDimensions = new System.Drawing.SizeF(7F, 12F);
             this.AutoScaleMode = System.Windows.Forms.AutoScaleMode.Font;
-            this.ClientSize = new System.Drawing.Size(516, 275);
+            this.ClientSize = new System.Drawing.Size(468, 338);
+            this.Controls.Add(this.btnClearView);
             this.Controls.Add(this.listViewInfo);
             this.Controls.Add(this.numericUpDownTimeDelay);
             this.Controls.Add(this.label1);
@@ -124,6 +136,7 @@
         private System.Windows.Forms.Label label1;
         private System.Windows.Forms.NumericUpDown numericUpDownTimeDelay;
         private System.Windows.Forms.ListView listViewInfo;
+        private System.Windows.Forms.Button btnClearView;
     }
 }
 
