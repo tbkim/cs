@@ -12,6 +12,11 @@ namespace TextMover
             init();
         }
 
+        ~FormMain()
+        {
+            Trace.Close(); //!< Flush(버퍼에 있는 것을 스트림으로 쓰기) 후 Listeners를 닫음
+        }
+
         private void init()
         {
             registEvent();
@@ -24,17 +29,8 @@ namespace TextMover
         private void registEvent()
         {
             btnMoveTxt.Click += btnMoveTxt_Click;
+            btnClearView.Click += btnClearView_Click;
             timerDelay.Tick += timer_tick;
-            btnClearView.Click += BtnClearView_Click;
-        }
-
-        private void BtnClearView_Click(object sender, EventArgs e)
-        {
-            listViewInfo.Clear();
-            listViewInfo.View = View.Details;
-            listViewInfo.Columns.Add("보낸문자", 60, HorizontalAlignment.Left);
-            listViewInfo.Columns.Add("지연시간", 60, HorizontalAlignment.Left);
-            writeLog(new Log(DateTime.Now, "리스트 지우기"));
         }
 
         private void btnMoveTxt_Click(object sender, EventArgs e)
@@ -54,6 +50,50 @@ namespace TextMover
 
             timerDelay.Interval = delay;
             timerDelay.Start();
+        }
+
+        private void btnClearView_Click(object sender, EventArgs e)
+        {
+            listViewInfo.Clear();
+            listViewInfo.View = View.Details;
+            listViewInfo.Columns.Add("보낸문자", 60, HorizontalAlignment.Left);
+            listViewInfo.Columns.Add("지연시간", 60, HorizontalAlignment.Left);
+            writeLog(new Log(DateTime.Now, "리스트 지우기"));
+        }
+
+        private void timer_tick(object sender, EventArgs e)
+        {
+            Info info = new Info();
+            try
+            {
+                sendTxt(); //!< text 옮기기(보내기)
+                writeLog(new Log(DateTime.Now, "send text"));
+
+                info.setTextSend(this.txtBoxSend.Text); //!< 정보 기록
+                info.setDelay(numericUpDownTimeDelay.Value); //!< 정보 기록
+                string logMsg = "정보기록 "
+                    + "보낸문자 : " + info.getTextSend()
+                    + " 지연시간 : " + info.getDelay().ToString();
+                writeLog(new Log(DateTime.Now, logMsg));
+
+                addInfo2View(info); //!< 정보를 listView에 추가하고, 표시
+                writeLog(new Log(DateTime.Now, "정보를 VIEW에 갱신"));
+
+                txtBoxSend.Text = string.Empty; //!< 보내기 텍스트박스 초기화
+                writeLog(new Log(DateTime.Now, "보내기 텍스트박스 초기화"));
+
+                //! 리스트뷰 마지막 아이템 자동스크롤
+                listViewInfo.EnsureVisible(listViewInfo.Items.Count - 1);
+            }
+            catch (Exception ex)
+            {
+                MessageBox.Show(ex.Message, "에러");
+            }
+            finally
+            {
+                timerDelay.Stop();
+                enabledControl(true);
+            }
         }
 
         //! UI 콘트롤 수정 여부 변경
@@ -77,78 +117,87 @@ namespace TextMover
             listViewInfo.BeginUpdate();
 
             //! textSend별로 ListViewItem객체 하나씩 만듦. textSend 항목 값 추가
-            ListViewItem lvi = new ListViewItem(info.textSend);
+            ListViewItem lvi = new ListViewItem(info.getTextSend());
              
-            lvi.SubItems.Add(info.delay.ToString());//!< 지연시간 항목 값 추가
+            lvi.SubItems.Add(info.getDelay().ToString());//!< 지연시간 항목 값 추가
             listViewInfo.Items.Add(lvi);
 
             listViewInfo.EndUpdate();
         }
 
-        private void timer_tick(object sender, EventArgs e)
+        //! 로그 쓰기
+        private void writeLog(Log log)
         {
-            Info info = new Info();
+            TextWriterTraceListener twtl = null;
             try
             {
-                sendTxt(); //!< text 옮기기(보내기)
-                writeLog(new Log(DateTime.Now, "send text"));
+                twtl = new TextWriterTraceListener("Logs.txt");
 
-                info.textSend = this.txtBoxSend.Text; //!< 정보 기록
-                info.delay = numericUpDownTimeDelay.Value; //!< 정보 기록
-                writeLog(new Log(DateTime.Now, "정보기록"));
-
-                addInfo2View(info); //!< 정보를 listView에 추가하고, 표시
-                writeLog(new Log(DateTime.Now, "정보를 VIEW에 갱신"));
-
-                txtBoxSend.Text = string.Empty; //!< 보내기 텍스트박스 초기화
-                writeLog(new Log(DateTime.Now, "보내기 텍스트박스 초기화"));
-
-                //! 리스트뷰 마지막 아이템 자동스크롤
-                listViewInfo.EnsureVisible(listViewInfo.Items.Count - 1); 
+                Trace.Listeners.Clear();
+                Trace.Listeners.Add(twtl); //!< 스트림을 파일에 쓰도록 리스너 추가
+                Trace.AutoFlush = true; //!< flush(버퍼에서 스트림으로 쓰기 작업)을 자동으로
+                Trace.Write(log.getTime().ToString());
+                Trace.Write(" "); //!< 날짜와 msg 구분자를 한칸(" ")으로 
+                Trace.WriteLine(log.getMsg()); //!< 로그를 하나를 쓰면 다음 줄로
+                Trace.Flush(); //!< 버퍼에서 스트림으로 쓰기 작업
             }
-            catch (Exception ex)
+            catch(Exception ex)
             {
-                MessageBox.Show(ex.Message, "에러");
+                MessageBox.Show(ex.Message, "오류");
             }
             finally
             {
-                timerDelay.Stop();
-                enabledControl(true);
-            }
-        }
-
-        //! 로그 쓰기
-        private void writeLog(Log log)
-        {   
-            Trace.Listeners.Clear();
-            using (TextWriterTraceListener twtl = new TextWriterTraceListener("Logs.txt"))
-            {
-                Trace.Listeners.Add(twtl); //!< 스트림을 파일에 쓰도록 리스너 추가
-                Trace.AutoFlush = false; //!< flush(버퍼에서 스트림으로 쓰기 작업)을 수동으로
-                Trace.Write(log.time.ToString());
-                Trace.Write(" "); //!< 날짜와 msg 구분자를 한칸(" ")으로 
-                Trace.WriteLine(log.msg); //!< 로그를 하나를 쓰면 다음 줄로
-                Trace.Flush(); //!< 버퍼에 있는 것을 스트림으로 쓰기
-            }
+                twtl?.Dispose();
+            }          
         }
 
         //! 정보 클래스
         private class Info
         {
-            public string textSend { get; set; } //!< 옮긴(보낸) 문자
-            public decimal delay { get; set; } //!< 문자를 옮길(보낼) 때 지연시간
+            private string textSend = string.Empty; //!< 옮긴(보낸) 문자
+            private decimal delay = 0; //!< 문자를 옮길(보낼) 때 지연시간
+
+            public void setTextSend(string textSend)
+            {
+                this.textSend = textSend;
+            }
+
+            public string getTextSend()
+            {
+                return textSend;
+            }
+
+            public void setDelay(decimal delay)
+            {
+                this.delay = delay;
+            }
+
+            public decimal getDelay()
+            {
+                return delay;
+            }
         }
 
         //! 로그 클래스
         private class Log
         {
-            public DateTime time;
-            public string msg;
+            private DateTime time = DateTime.Now;
+            private string msg = string.Empty;
 
             public Log(DateTime time, string msg)
             {
                 this.time = time;
                 this.msg = msg;
+            }
+
+            public DateTime getTime()
+            {
+                return time;
+            }
+
+            public string getMsg()
+            {
+                return msg;
             }
         }
     }
