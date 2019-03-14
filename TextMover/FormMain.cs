@@ -6,6 +6,10 @@ namespace TextMover
 {
     public partial class FormMain : Form
     {
+        System.Threading.Timer timer;
+        private System.Windows.Forms.Timer timerProgressBar;
+        private int countTimerProgressBar = 0;
+
         public FormMain()
         {
             InitializeComponent();
@@ -24,6 +28,30 @@ namespace TextMover
             listViewInfo.View = View.Details;
             listViewInfo.Columns.Add("보낸문자", 60, HorizontalAlignment.Left);
             listViewInfo.Columns.Add("지연시간", 60, HorizontalAlignment.Left);
+
+            foreach (TimerType timerType in (TimerType[])Enum.GetValues(typeof(TimerType)))
+            {
+                comboBoxThreadType.Items.Add(timerType);
+            }
+            comboBoxThreadType.SelectedIndex = 0;
+
+            // 테스트용으로 타이머 이용
+            timerProgressBar = new Timer();
+            timerProgressBar.Interval = 1000;
+            timerProgressBar.Tick += new EventHandler(progressBarTimer_Tick);
+
+            // 디폴트값 사용 (Maximum=100, Minimum=0, Step=10)
+            progressBarMoveTxt.Style = ProgressBarStyle.Blocks;
+
+            // 최대,최소,간격을 임의로 조정
+            progressBarMoveTxt.Style = ProgressBarStyle.Continuous;
+            progressBarMoveTxt.Minimum = 0;
+            progressBarMoveTxt.Maximum = 1;
+            //progressBarMoveTxt.Step = 1;
+            progressBarMoveTxt.Value = 0;
+
+            progressBarMoveTxt.Style = ProgressBarStyle.Blocks;
+            progressBarMoveTxt.Enabled = true;
         }
 
         private void registEvent()
@@ -42,11 +70,117 @@ namespace TextMover
             }
 
             enabledControl(false);
+
+            if (-1 != comboBoxThreadType.SelectedIndex)
+            {
+                startProgressBar();
+
+                switch ((TimerType)comboBoxThreadType.SelectedItem)
+                {
+                    case TimerType.WindowsForms:
+                        moveTextWinFormsTimer();
+                        break;
+                    case TimerType.Threading:
+                        moveTextThreadingTimer();
+                        break;
+                    case TimerType.Timers:
+                        MessageBox.Show("Timers 기능은 없습니다.", "");
+                        break;
+                }
+            }
             
+        }
+
+        private void startProgressBar()
+        {
+            int delay = getDelayFromUi();
+            if (delay < 1000)
+            {
+                progressBarMoveTxt.Maximum = 1;
+            }
+            else
+            {
+                progressBarMoveTxt.Maximum = delay / 1000;
+            }
+            timerProgressBar.Interval = delay;
+            progressBarMoveTxt.Value = 0;
+            timerProgressBar.Start();
+        }
+
+        delegate void TimerEventDelegate();
+
+        void timerCallback(Object state)
+        {
+            BeginInvoke(new TimerEventDelegate(work));
+        }
+
+        private void work()
+        {
+            Info info = new Info();
+            try
+            {
+                innerWork(info);
+            }
+            catch (Exception ex)
+            {
+                MessageBox.Show(ex.Message, "에러");
+            }
+            finally
+            {
+                timer.Dispose();
+                enabledControl(true);
+            }
+        }
+
+        private void innerWork(Info info)
+        {
+            sendTxt(); //!< text 옮기기(보내기)
+            writeLog(new Log(DateTime.Now, "send text"));
+
+            info.setTextSend(this.txtBoxSend.Text); //!< 정보 기록
+            info.setDelay(numericUpDownTimeDelay.Value); //!< 정보 기록
+            string logMsg = "정보기록 "
+                + "보낸문자 : " + info.getTextSend()
+                + " 지연시간 : " + info.getDelay().ToString();
+            writeLog(new Log(DateTime.Now, logMsg));
+
+            addInfo2View(info); //!< 정보를 listView에 추가하고, 표시
+            writeLog(new Log(DateTime.Now, "정보를 VIEW에 갱신"));
+
+            txtBoxSend.Text = string.Empty; //!< 보내기 텍스트박스 초기화
+            writeLog(new Log(DateTime.Now, "보내기 텍스트박스 초기화"));
+
+            //! 리스트뷰 마지막 아이템 자동스크롤
+            listViewInfo.EnsureVisible(listViewInfo.Items.Count - 1);
+        }
+
+        private int getDelayFromUi()
+        {
             int delay = (int)numericUpDownTimeDelay.Value * 1000; //!< 1000ms = 1s
 
             //! 즉시(0ms) 보내는 것과 1ms 후 보내는 것의 체감 상 차이가 없어 코드 단순화
             if (delay == 0) delay = 1;
+
+            return delay;
+        }
+
+
+        private void moveTextThreadingTimer()
+        {
+            int delay = getDelayFromUi();
+
+            timer = new System.Threading.Timer(timerCallback, null, delay, System.Threading.Timeout.Infinite);
+        }
+
+        private void moveTextWinFormsTimer()
+        {
+            /*
+            int delay = (int)numericUpDownTimeDelay.Value * 1000; //!< 1000ms = 1s
+
+            //! 즉시(0ms) 보내는 것과 1ms 후 보내는 것의 체감 상 차이가 없어 코드 단순화
+            if (delay == 0) delay = 1;
+            */
+            int delay = getDelayFromUi();
 
             timerDelay.Interval = delay;
             timerDelay.Start();
@@ -66,24 +200,7 @@ namespace TextMover
             Info info = new Info();
             try
             {
-                sendTxt(); //!< text 옮기기(보내기)
-                writeLog(new Log(DateTime.Now, "send text"));
-
-                info.setTextSend(this.txtBoxSend.Text); //!< 정보 기록
-                info.setDelay(numericUpDownTimeDelay.Value); //!< 정보 기록
-                string logMsg = "정보기록 "
-                    + "보낸문자 : " + info.getTextSend()
-                    + " 지연시간 : " + info.getDelay().ToString();
-                writeLog(new Log(DateTime.Now, logMsg));
-
-                addInfo2View(info); //!< 정보를 listView에 추가하고, 표시
-                writeLog(new Log(DateTime.Now, "정보를 VIEW에 갱신"));
-
-                txtBoxSend.Text = string.Empty; //!< 보내기 텍스트박스 초기화
-                writeLog(new Log(DateTime.Now, "보내기 텍스트박스 초기화"));
-
-                //! 리스트뷰 마지막 아이템 자동스크롤
-                listViewInfo.EnsureVisible(listViewInfo.Items.Count - 1);
+                innerWork(info);
             }
             catch (Exception ex)
             {
@@ -93,6 +210,19 @@ namespace TextMover
             {
                 timerDelay.Stop();
                 enabledControl(true);
+            }
+        }
+
+        private void progressBarTimer_Tick(object sender, EventArgs e)
+        {
+            // 한 스텝 이동
+            progressBarMoveTxt.PerformStep();
+
+            // 타이머 중지 조건
+            if (++countTimerProgressBar == 2)
+            {
+                timerProgressBar.Stop();
+                progressBarMoveTxt.Enabled = false;
             }
         }
 
@@ -199,6 +329,13 @@ namespace TextMover
             {
                 return msg;
             }
+        }
+
+        enum TimerType
+        {
+            WindowsForms = 0,
+            Threading = 1,
+            Timers = 2,
         }
     }
 }
