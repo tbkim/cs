@@ -38,7 +38,7 @@
             this.listViewInfo = new System.Windows.Forms.ListView();
             this.btnClearView = new System.Windows.Forms.Button();
             this.comboBoxThreadType = new System.Windows.Forms.ComboBox();
-            this.progressBarMoveTxt = new System.Windows.Forms.ProgressBar();
+            this.label2 = new System.Windows.Forms.Label();
             ((System.ComponentModel.ISupportInitialize)(this.numericUpDownTimeDelay)).BeginInit();
             this.SuspendLayout();
             // 
@@ -92,7 +92,7 @@
             // listViewInfo
             // 
             this.listViewInfo.FullRowSelect = true;
-            this.listViewInfo.Location = new System.Drawing.Point(28, 190);
+            this.listViewInfo.Location = new System.Drawing.Point(27, 148);
             this.listViewInfo.Name = "listViewInfo";
             this.listViewInfo.Size = new System.Drawing.Size(407, 163);
             this.listViewInfo.TabIndex = 3;
@@ -100,9 +100,9 @@
             // 
             // btnClearView
             // 
-            this.btnClearView.Location = new System.Drawing.Point(314, 105);
+            this.btnClearView.Location = new System.Drawing.Point(313, 105);
             this.btnClearView.Name = "btnClearView";
-            this.btnClearView.Size = new System.Drawing.Size(120, 23);
+            this.btnClearView.Size = new System.Drawing.Size(121, 23);
             this.btnClearView.TabIndex = 4;
             this.btnClearView.Text = "리스트 지우기";
             this.btnClearView.UseVisualStyleBackColor = true;
@@ -111,24 +111,26 @@
             // 
             this.comboBoxThreadType.DropDownStyle = System.Windows.Forms.ComboBoxStyle.DropDownList;
             this.comboBoxThreadType.FormattingEnabled = true;
-            this.comboBoxThreadType.Location = new System.Drawing.Point(314, 21);
+            this.comboBoxThreadType.Location = new System.Drawing.Point(313, 64);
             this.comboBoxThreadType.Name = "comboBoxThreadType";
             this.comboBoxThreadType.Size = new System.Drawing.Size(121, 20);
             this.comboBoxThreadType.TabIndex = 5;
             // 
-            // progressBarMoveTxt
+            // label2
             // 
-            this.progressBarMoveTxt.Location = new System.Drawing.Point(28, 146);
-            this.progressBarMoveTxt.Name = "progressBarMoveTxt";
-            this.progressBarMoveTxt.Size = new System.Drawing.Size(407, 23);
-            this.progressBarMoveTxt.TabIndex = 6;
+            this.label2.AutoSize = true;
+            this.label2.Location = new System.Drawing.Point(313, 46);
+            this.label2.Name = "label2";
+            this.label2.Size = new System.Drawing.Size(65, 12);
+            this.label2.TabIndex = 7;
+            this.label2.Text = "타이머타입";
             // 
             // FormMain
             // 
             this.AutoScaleDimensions = new System.Drawing.SizeF(7F, 12F);
             this.AutoScaleMode = System.Windows.Forms.AutoScaleMode.Font;
-            this.ClientSize = new System.Drawing.Size(468, 387);
-            this.Controls.Add(this.progressBarMoveTxt);
+            this.ClientSize = new System.Drawing.Size(468, 341);
+            this.Controls.Add(this.label2);
             this.Controls.Add(this.comboBoxThreadType);
             this.Controls.Add(this.btnClearView);
             this.Controls.Add(this.listViewInfo);
@@ -158,7 +160,7 @@
         private System.Windows.Forms.ListView listViewInfo;
         private System.Windows.Forms.Button btnClearView;
         private System.Windows.Forms.ComboBox comboBoxThreadType;
-        private System.Windows.Forms.ProgressBar progressBarMoveTxt;
+        private System.Windows.Forms.Label label2;
     }
 }
 
