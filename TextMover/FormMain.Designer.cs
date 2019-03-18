@@ -48,7 +48,7 @@
             this.btnMoveTxt.Location = new System.Drawing.Point(27, 148);
             this.btnMoveTxt.Name = "btnMoveTxt";
             this.btnMoveTxt.Size = new System.Drawing.Size(233, 23);
-            this.btnMoveTxt.TabIndex = 2;
+            this.btnMoveTxt.TabIndex = 4;
             this.btnMoveTxt.Text = "문자 옮기기";
             this.btnMoveTxt.UseVisualStyleBackColor = true;
             // 
@@ -67,7 +67,7 @@
             this.txtBoxRecv.MaxLength = 5;
             this.txtBoxRecv.Name = "txtBoxRecv";
             this.txtBoxRecv.Size = new System.Drawing.Size(100, 21);
-            this.txtBoxRecv.TabIndex = 2;
+            this.txtBoxRecv.TabIndex = 0;
             // 
             // label1
             // 
@@ -96,7 +96,7 @@
             this.listViewInfo.Location = new System.Drawing.Point(27, 191);
             this.listViewInfo.Name = "listViewInfo";
             this.listViewInfo.Size = new System.Drawing.Size(407, 163);
-            this.listViewInfo.TabIndex = 3;
+            this.listViewInfo.TabIndex = 99;
             this.listViewInfo.UseCompatibleStateImageBehavior = false;
             // 
             // btnClearView
@@ -104,7 +104,7 @@
             this.btnClearView.Location = new System.Drawing.Point(313, 148);
             this.btnClearView.Name = "btnClearView";
             this.btnClearView.Size = new System.Drawing.Size(121, 23);
-            this.btnClearView.TabIndex = 4;
+            this.btnClearView.TabIndex = 5;
             this.btnClearView.Text = "리스트 지우기";
             this.btnClearView.UseVisualStyleBackColor = true;
             // 
@@ -115,7 +115,7 @@
             this.comboBoxThreadType.Location = new System.Drawing.Point(313, 64);
             this.comboBoxThreadType.Name = "comboBoxThreadType";
             this.comboBoxThreadType.Size = new System.Drawing.Size(121, 20);
-            this.comboBoxThreadType.TabIndex = 5;
+            this.comboBoxThreadType.TabIndex = 3;
             // 
             // label2
             // 
@@ -131,7 +131,7 @@
             this.progressBar1.Location = new System.Drawing.Point(27, 103);
             this.progressBar1.Name = "progressBar1";
             this.progressBar1.Size = new System.Drawing.Size(407, 23);
-            this.progressBar1.TabIndex = 8;
+            this.progressBar1.TabIndex = 0;
             // 
             // FormMain
             // 
