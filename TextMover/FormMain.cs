@@ -6,10 +6,11 @@ namespace TextMover
 {
     public partial class FormMain : Form
     {
-        private System.Threading.Timer timer = null;
-        private Info info = new Info();
-        private DateTime dateTime = DateTime.Now;
-        private const int count = 50;
+        private System.Threading.Timer threadingTimer = null;
+        private System.Timers.Timer timer = null;
+        private Info info = new Info(); //!< 정보 인스턴스
+        private DateTime dateTime = DateTime.Now; //!< 문자 옮기기 버튼 클릭 시간
+        private const int count = 50; //!< 문자를 옮길 수 있는 최대 횟수
 
         public FormMain()
         {
@@ -28,6 +29,8 @@ namespace TextMover
             initListView();
             initComboBox();
             initProgressBar();
+            timerWinform.Interval = 1000;
+            deleteLogFile();
         }
 
         private void registEvent()
@@ -61,6 +64,23 @@ namespace TextMover
             progressBar1.Step = 1; //!< 스탭마다 증가시킬 값
         }
 
+        private void deleteLogFile()
+        {
+            try
+            {
+                string logFilePath = Application.StartupPath + "\\Logs.txt";
+                System.IO.FileInfo fi = new System.IO.FileInfo(logFilePath);
+                if (fi.Exists)
+                {
+                    fi.Delete();
+                }
+            }
+            catch (System.IO.IOException e)
+            {
+                MessageBox.Show(e.Message, "에러");
+            }
+        }
+
         private void btnMoveTxt_Click(object sender, EventArgs e)
         {
             if (listViewInfo.Items.Count >= count)
@@ -72,13 +92,14 @@ namespace TextMover
             progressBar1.Value = 0; //!< 프로그레스바 현재 값 초기화(=빈 값으로)
             enabledControl(false);
 
-            info.setTextSend(this.txtBoxSend.Text); //!< 정보 인스턴스에 옮길 문자 set
-            info.setDelay(numericUpDownTimeDelay.Value); //!< 정보 인스턴스에 딜레이 값 set
+            info.TextSend = this.txtBoxSend.Text; //!< 정보 인스턴스에 옮길 문자 set
+            info.Delay = numericUpDownTimeDelay.Value; //!< 정보 인스턴스에 딜레이 값 set
+            
             //! 정보 인스턴스에 타이머 타입 값 set
-            info.setTimerType(((TimerType)comboBoxThreadType.SelectedIndex));
+            info.TimerType = ((TimerType)comboBoxThreadType.SelectedIndex);
 
-            if (info.getDelay() == 0) { progressBar1.Maximum = 1; } //!< delay가 0일 때, 프로그레스바 최대 값을 1로
-            else { progressBar1.Maximum = (int)info.getDelay(); } //!< 프로그레스바 최대 값을 delay 값으로
+            if (info.Delay == 0) { progressBar1.Maximum = 1; } //!< delay가 0일 때, 프로그레스바 최대 값을 1로
+            else { progressBar1.Maximum = (int)info.Delay; } //!< 프로그레스바 최대 값을 delay 값으로
 
             //! 지연시간 기능을 실행할 때 사용할 Timer를 선택하여 실행
             dateTime = DateTime.Now;
@@ -91,7 +112,7 @@ namespace TextMover
                     moveTextThreadingTimer(); //!< 쓰레딩 타이머를 이용하여 문자 옮기기 기능 실행
                     break;
                 case TimerType.Timers:
-                    MessageBox.Show("Timers 기능은 없습니다.", "");
+                    moveTextTimer(); //!< 시스템 타이머를 이용하여 문자 옮기기 기능 실행
                     break;
             }
         }
@@ -114,7 +135,7 @@ namespace TextMover
             TimeSpan diff = DateTime.Now - dateTime; //!< 현재시간 - 버튼클릭시간 = 시간간격
             
             //! 시간간격이 딜레이시간보다 같거나 작으면 return
-            if ((decimal)diff.Seconds <= info.getDelay()) { return; } 
+            if ((decimal)diff.Seconds <= info.Delay) { return; } 
 
             try
             {
@@ -127,13 +148,17 @@ namespace TextMover
             }
             finally
             {
-                switch (info.getTimerType())
+                switch (info.TimerType)
                 {
                     case TimerType.WindowsForms:
                         timerWinform?.Stop(); //!< 윈폼타이머 중지
                         break;
                     case TimerType.Threading:
-                        timer?.Dispose(); //!< 타이머 리소스 해제
+                        threadingTimer?.Dispose(); //!< 타이머 리소스 해제
+                        break;
+                    case TimerType.Timers:
+                        timer?.Stop();
+                        timer?.Dispose();
                         break;
                     default:
                         break;
@@ -144,14 +169,14 @@ namespace TextMover
 
         private void moveTextWinFormsTimer()
         {
-            timerWinform.Interval = 1000;
             timerWinform.Start();
         }
 
         private void moveTextThreadingTimer()
         {
-            //! 0은 즉시 시작, 1000은 callback 호출 시간 간격
-            timer = new System.Threading.Timer(timerCallback, null, 1000, 1000); 
+            const int delayStart = 1000; //!< delayStart는 시작 지연시간, 밀리세컨드
+            const int period = 1000; //!< period는 callback 호출 시간 간격, 밀리세컨드
+            threadingTimer = new System.Threading.Timer(timerCallback, null, delayStart, period); 
         }
 
         private delegate void TimerEventDelegate();
@@ -160,6 +185,22 @@ namespace TextMover
         {
             //! 컨트롤의 내부 핸들이 작성된 스레드에서 지정된 대리자를 비동기식으로 실행
             BeginInvoke(new TimerEventDelegate(work));
+        }
+
+        //! 쓰레드풀의 작업쓰레드가 지정된 시간 간격으로 아래 이벤트 핸들러 실행
+        private void timer_Elapsed(object sender, System.Timers.ElapsedEventArgs e)
+        {
+            BeginInvoke(new TimerEventDelegate(work));
+        }
+        
+        //! System.Timer를 이용하여 문자 옮기기 기능 실행
+        private void moveTextTimer()
+        {
+            timer = new System.Timers.Timer();
+            timer.Elapsed -= timer_Elapsed; //!< 이벤트 등록 해제
+            timer.Elapsed += new System.Timers.ElapsedEventHandler(timer_Elapsed); //!< 이벤트 등록
+            timer.Interval = 1000;
+            timer.Start();
         }
 
         //! UI 콘트롤 수정 여부 변경
@@ -174,7 +215,7 @@ namespace TextMover
         //! 문자 옮기기(보내기)
         private void sendTxt(Info info)
         {
-            this.txtBoxRecv.Text = info.getTextSend();
+            this.txtBoxRecv.Text = info.TextSend;
             writeLog("send text");
 
             txtBoxSend.Text = string.Empty; //!< 보내기 텍스트박스 초기화
@@ -188,10 +229,10 @@ namespace TextMover
             listViewInfo.BeginUpdate();
 
             //! textSend별로 ListViewItem객체 하나씩 만듦. textSend 항목 값 추가
-            ListViewItem lvi = new ListViewItem(info.getTextSend());
+            ListViewItem lvi = new ListViewItem(info.TextSend);
              
-            lvi.SubItems.Add(info.getDelay().ToString());//!< 지연시간 항목 값 추가
-            lvi.SubItems.Add(info.getTimerType().ToString());
+            lvi.SubItems.Add(info.Delay.ToString());//!< 지연시간 항목 값 추가
+            lvi.SubItems.Add(info.TimerType.ToString());
             listViewInfo.Items.Add(lvi);
 
             listViewInfo.EndUpdate();
@@ -201,9 +242,9 @@ namespace TextMover
             listViewInfo.EnsureVisible(listViewInfo.Items.Count - 1);
 
             string logMsg = "정보기록 "
-                + "보낸문자 : " + info.getTextSend()
-                + " 지연시간 : " + info.getDelay().ToString()
-                + " 타이머타입 : " + info.getTimerType();
+                + "보낸문자 : " + info.TextSend
+                + " 지연시간 : " + info.Delay.ToString()
+                + " 타이머타입 : " + info.TimerType;
             writeLog(logMsg);
         }
 
@@ -237,42 +278,29 @@ namespace TextMover
         private class Info
         {
             private string textSend = string.Empty; //!< 옮긴(보낸) 문자
+            public string TextSend
+            {
+                get { return textSend; }
+                set { textSend = value; }
+            }
+
             private decimal delay = 0; //!< 문자를 옮길(보낼) 때 지연시간
-            private TimerType timerType = TimerType.WindowsForms; //!< 콤보박스로 선택한 타이머의 타입
-
-            public void setTextSend(string textSend)
+            public decimal Delay
             {
-                this.textSend = textSend;
-            }
+                get { return delay; }
+                set { delay = value; }
+            } 
 
-            public string getTextSend()
+            private TimerType timerType = TimerType.WindowsForms; //<! 콤보박스로 선택한 타이머의 타입
+            public TimerType TimerType
             {
-                return textSend;
-            }
-
-            public void setDelay(decimal delay)
-            {
-                this.delay = delay;
-            }
-
-            public decimal getDelay()
-            {
-                return delay;
-            }
-
-            public void setTimerType(TimerType timerType)
-            {
-                this.timerType = timerType;
-            }
-
-            public TimerType getTimerType()
-            {
-                return timerType;
+                get { return timerType; }
+                set { timerType = value; }
             }
         }
         
         //! comboBox 아이템이면서 타이머의 종류를 나타냄
-        private enum TimerType
+        public enum TimerType
         {
             WindowsForms = 0, //!< System.Windows.Forms.Timer
             Threading = 1, //!< System.Threading.Timer
