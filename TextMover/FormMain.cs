@@ -7,10 +7,12 @@ namespace TextMover
     public partial class FormMain : Form
     {
         private System.Threading.Timer threadingTimer = null;
-        private System.Timers.Timer timer = null;
+        private System.Timers.Timer timer = new System.Timers.Timer();
         private Info info = new Info(); //!< 정보 인스턴스
         private DateTime dateTime = DateTime.Now; //!< 문자 옮기기 버튼 클릭 시간
         private const int count = 50; //!< 문자를 옮길 수 있는 최대 횟수
+        private const string logFileName = "Logs.txt"; //!< 확장자를 포함한 로그파일 이름
+        Controller controller = new Controller();
 
         public FormMain()
         {
@@ -26,11 +28,11 @@ namespace TextMover
         private void init()
         {
             registEvent();
-            initListView();
-            initComboBox();
-            initProgressBar();
-            timerWinform.Interval = 1000;
+            initListView(listViewInfo);
+            initComboBox(comboBoxThreadType);
+            controller.initProgressBar(progressBar1);
             deleteLogFile();
+            threadingTimer = new System.Threading.Timer(timerCallback);
         }
 
         private void registEvent()
@@ -38,9 +40,10 @@ namespace TextMover
             btnMoveTxt.Click += btnMoveTxt_Click;
             btnClearView.Click += btnClearView_Click;
             timerWinform.Tick += timerWinform_tick;
+            timer.Elapsed += new System.Timers.ElapsedEventHandler(timer_Elapsed); //!< 이벤트 등록
         }
 
-        private void initListView()
+        private void initListView(ListView listViewInfo)
         {
             listViewInfo.View = View.Details;
             listViewInfo.Columns.Add("보낸문자", 60, HorizontalAlignment.Left);
@@ -48,7 +51,7 @@ namespace TextMover
             listViewInfo.Columns.Add("타이머타입", 100, HorizontalAlignment.Left);
         }
 
-        private void initComboBox()
+        private void initComboBox(ComboBox comboBoxThreadType)
         {
             //! 타이머 타입 enum을 순회하여 comboBox에 추가
             foreach (TimerType timerType in (TimerType[])Enum.GetValues(typeof(TimerType)))
@@ -58,17 +61,11 @@ namespace TextMover
             comboBoxThreadType.SelectedIndex = (int)TimerType.WindowsForms; //!< 선택 값을 "WindowsForms"으로 
         }
 
-        private void initProgressBar()
-        {
-            progressBar1.Style = ProgressBarStyle.Continuous; //!< 프로그레스바 스타일을 연속막대로
-            progressBar1.Step = 1; //!< 스탭마다 증가시킬 값
-        }
-
         private void deleteLogFile()
         {
             try
             {
-                string logFilePath = Application.StartupPath + "\\Logs.txt";
+                string logFilePath = Application.StartupPath + "\\" + logFileName;
                 System.IO.FileInfo fi = new System.IO.FileInfo(logFilePath);
                 if (fi.Exists)
                 {
@@ -81,8 +78,20 @@ namespace TextMover
             }
         }
 
+        private void runFormProgress()
+        {
+            FormProgress formProgress = new FormProgress(info);
+            formProgress.ShowDialog();
+        }
+
         private void btnMoveTxt_Click(object sender, EventArgs e)
         {
+            if (txtBoxSend.TextLength == 0)
+            {
+                MessageBox.Show("옮길 문자열을 입력하세요", "알림");
+                return;
+            }
+
             if (listViewInfo.Items.Count >= count)
             {
                 MessageBox.Show("문자는 " + count + "번까지만 옮길 수 있습니다.", "알림");
@@ -98,8 +107,10 @@ namespace TextMover
             //! 정보 인스턴스에 타이머 타입 값 set
             info.TimerType = ((TimerType)comboBoxThreadType.SelectedIndex);
 
-            if (info.Delay == 0) { progressBar1.Maximum = 1; } //!< delay가 0일 때, 프로그레스바 최대 값을 1로
-            else { progressBar1.Maximum = (int)info.Delay; } //!< 프로그레스바 최대 값을 delay 값으로
+            System.Threading.Thread worker = new System.Threading.Thread(runFormProgress);
+            worker.Start();
+
+            controller.setProgressBarMaximum(info, progressBar1);
 
             //! 지연시간 기능을 실행할 때 사용할 Timer를 선택하여 실행
             dateTime = DateTime.Now;
@@ -132,10 +143,11 @@ namespace TextMover
         {
             progressBar1.PerformStep(); //!< 프로그레스바 진행을 스탭만큼 증가
 
-            TimeSpan diff = DateTime.Now - dateTime; //!< 현재시간 - 버튼클릭시간 = 시간간격
-            
+            //diff = DateTime.Now - dateTime; //!< 현재시간 - 버튼클릭시간 = 시간간격
+            info.Diff = DateTime.Now - dateTime;
+
             //! 시간간격이 딜레이시간보다 같거나 작으면 return
-            if ((decimal)diff.Seconds <= info.Delay) { return; } 
+            if ((decimal)info.Diff.Seconds <= info.Delay) { return; } 
 
             try
             {
@@ -151,14 +163,13 @@ namespace TextMover
                 switch (info.TimerType)
                 {
                     case TimerType.WindowsForms:
-                        timerWinform?.Stop(); //!< 윈폼타이머 중지
+                        timerWinform.Stop(); //!< 윈폼타이머 중지
                         break;
                     case TimerType.Threading:
-                        threadingTimer?.Dispose(); //!< 타이머 리소스 해제
+                        threadingTimer.Change(System.Threading.Timeout.Infinite, System.Threading.Timeout.Infinite);
                         break;
                     case TimerType.Timers:
-                        timer?.Stop();
-                        timer?.Dispose();
+                        timer.Stop();
                         break;
                     default:
                         break;
@@ -169,6 +180,7 @@ namespace TextMover
 
         private void moveTextWinFormsTimer()
         {
+            timerWinform.Interval = 1000;
             timerWinform.Start();
         }
 
@@ -176,7 +188,7 @@ namespace TextMover
         {
             const int delayStart = 1000; //!< delayStart는 시작 지연시간, 밀리세컨드
             const int period = 1000; //!< period는 callback 호출 시간 간격, 밀리세컨드
-            threadingTimer = new System.Threading.Timer(timerCallback, null, delayStart, period); 
+            threadingTimer.Change(delayStart, period);
         }
 
         private delegate void TimerEventDelegate();
@@ -196,9 +208,6 @@ namespace TextMover
         //! System.Timer를 이용하여 문자 옮기기 기능 실행
         private void moveTextTimer()
         {
-            timer = new System.Timers.Timer();
-            timer.Elapsed -= timer_Elapsed; //!< 이벤트 등록 해제
-            timer.Elapsed += new System.Timers.ElapsedEventHandler(timer_Elapsed); //!< 이벤트 등록
             timer.Interval = 1000;
             timer.Start();
         }
@@ -254,7 +263,7 @@ namespace TextMover
             TextWriterTraceListener twtl = null;
             try
             {
-                twtl = new TextWriterTraceListener("Logs.txt");
+                twtl = new TextWriterTraceListener(logFileName);
 
                 Trace.Listeners.Clear();
                 Trace.Listeners.Add(twtl); //!< 스트림을 파일에 쓰도록 리스너 추가
@@ -272,39 +281,6 @@ namespace TextMover
             {
                 twtl?.Dispose();
             }          
-        }
-
-        //! 정보 클래스
-        private class Info
-        {
-            private string textSend = string.Empty; //!< 옮긴(보낸) 문자
-            public string TextSend
-            {
-                get { return textSend; }
-                set { textSend = value; }
-            }
-
-            private decimal delay = 0; //!< 문자를 옮길(보낼) 때 지연시간
-            public decimal Delay
-            {
-                get { return delay; }
-                set { delay = value; }
-            } 
-
-            private TimerType timerType = TimerType.WindowsForms; //<! 콤보박스로 선택한 타이머의 타입
-            public TimerType TimerType
-            {
-                get { return timerType; }
-                set { timerType = value; }
-            }
-        }
-        
-        //! comboBox 아이템이면서 타이머의 종류를 나타냄
-        public enum TimerType
-        {
-            WindowsForms = 0, //!< System.Windows.Forms.Timer
-            Threading = 1, //!< System.Threading.Timer
-            Timers = 2, //!< System.Timer
         }
     }
 }
